@@ -1,0 +1,120 @@
+<html>
+
+<head>
+  <title>Image Map Types</title>
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
+
+  <link rel="stylesheet" type="text/css" href="styles.css" />
+  <script>
+    const maxZoom = "11"
+    const minZoom = "3"
+    const name = "name"
+    const alt = ""
+  </script>
+  <script>
+    class CoordMapType {
+      tileSize;
+      maxZoom = parseInt(maxZoom)
+      constructor(tileSize) {
+        this.tileSize = tileSize;
+      }
+      getTile(coord, zoom, ownerDocument) {
+        const normalized_coord = getNormalizedCoord(coord, zoom);
+
+        if (normalized_coord == null) {
+          return "";
+        }
+
+        const div = ownerDocument.createElement("div");
+
+        div.style.width = this.tileSize.width + "px";
+        div.style.height = this.tileSize.height + "px";
+        div.style.backgroundImage = 'url(https:///storage.googleapis.com/earth-gen-map-tiles/map_tiles/' + (zoom) + '/' + normalized_coord.x + '_' + normalized_coord.y + '.png';
+        div.style.backgroundSize = '128px 128px';
+        // div.style.borderStyle = "solid";
+
+        const text = ownerDocument.createElement("div");
+        text.style.position = "absolute";
+        text.style.left = "5px";
+        text.style.top = "5px";
+        text.style.color = "white";
+        text.textContent = coord.x + ", " + coord.y;
+
+        // Add text div to tile div
+
+  // div.appendChild(text);
+        return div;
+      }
+      releaseTile(tile) { }
+    }
+
+    function getNormalizedCoord(coord, zoom) {
+      console.log(zoom);
+      const x = coord.x;
+      const y = coord.y;
+
+      const bounds = Math.pow(2, zoom);
+      const x_bounds = Math.pow(2, zoom);
+      const y_bounds = Math.pow(2, zoom);
+      console.log(bounds);
+
+      if (y < 0 || y >= y_bounds) {
+        return null;
+      }
+
+      if (x < 0 || x >= x_bounds) {
+        return null;
+      }
+
+      return { x: Math.abs(x), y: Math.abs(y) };
+    }
+
+    function initMap() {
+      const map = new google.maps.Map(document.getElementById("map"), {
+        // zoom: 0,
+        zoom: 3,
+        center: { lat: 80, lng: -100 },
+        streetViewControl: false,
+        mapTypeId: "coordinate",
+        mapTypeControlOptions: {
+          mapTypeIds: ["coordinate"],
+          style: google.maps.MapTypeControlStyle.DROPDOWN_MENU,
+        },
+      });
+
+      map.addListener("maptypeid_changed", () => {
+        const showStreetViewControl = map.getMapTypeId() !== "coordinate";
+
+        map.setOptions({
+          streetViewControl: showStreetViewControl,
+        });
+      });
+
+      const scaleOptions = {
+        position: google.maps.ControlPosition.BOTTOM_RIGHT
+      };
+
+      map.controls
+
+      map.mapTypes.set(
+        "coordinate",
+        new CoordMapType(new google.maps.Size(128, 128)),
+      );
+    }
+
+    window.initMap = initMap;
+
+  </script>
+</head>
+
+<body>
+    <div style="height: 10%;"></div>
+  <div id="map"></div>
+  <script
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBzjHjGbbhvCATPQuopGlK5tSEEjTbUWMM&callback=initMap&v=weekly"
+    defer></script>
+    <div style="height: 10%;"></div>
+
+</body>
+
+</html>
