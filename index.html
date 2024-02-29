@@ -1,14 +1,14 @@
 <html>
 
 <head>
-  <title>Image Map Types</title>
+  <title>Earth Gen Demo</title>
   <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
 
   <link rel="stylesheet" type="text/css" href="styles.css" />
   <script>
     const maxZoom = "11"
-    const minZoom = "3"
-    const name = "name"
+    const minZoom = "4"
+    const name = "Map"
     const alt = ""
   </script>
   <script>
@@ -18,45 +18,34 @@
       constructor(tileSize) {
         this.tileSize = tileSize;
       }
+
+      
       getTile(coord, zoom, ownerDocument) {
         const normalized_coord = getNormalizedCoord(coord, zoom);
-
         if (normalized_coord == null) {
           return "";
         }
 
+        const latlng = getLatLng(normalized_coord, zoom);
         const div = ownerDocument.createElement("div");
 
         div.style.width = this.tileSize.width + "px";
         div.style.height = this.tileSize.height + "px";
         div.style.backgroundImage = 'url(https:///storage.googleapis.com/earth-gen-map-tiles/map_tiles/' + (zoom) + '/' + normalized_coord.x + '_' + normalized_coord.y + '.png';
         div.style.backgroundSize = '128px 128px';
-        // div.style.borderStyle = "solid";
 
-        const text = ownerDocument.createElement("div");
-        text.style.position = "absolute";
-        text.style.left = "5px";
-        text.style.top = "5px";
-        text.style.color = "white";
-        text.textContent = coord.x + ", " + coord.y;
-
-        // Add text div to tile div
-
-  // div.appendChild(text);
         return div;
       }
       releaseTile(tile) { }
     }
 
     function getNormalizedCoord(coord, zoom) {
-      console.log(zoom);
       const x = coord.x;
       const y = coord.y;
 
       const bounds = Math.pow(2, zoom);
       const x_bounds = Math.pow(2, zoom);
       const y_bounds = Math.pow(2, zoom);
-      console.log(bounds);
 
       if (y < 0 || y >= y_bounds) {
         return null;
@@ -69,11 +58,29 @@
       return { x: Math.abs(x), y: Math.abs(y) };
     }
 
+    function getLatLng(coord, zoom) {
+      const tileSize = 128;
+
+      const lat = 85 - (coord.y * tileSize) / Math.pow(2, zoom);
+      const lng = -180 + (coord.x * tileSize) / Math.pow(2, zoom);
+
+      return {lat: lat, lng: lng}
+    }
+
     function initMap() {
       const map = new google.maps.Map(document.getElementById("map"), {
-        // zoom: 0,
         zoom: 4,
-        center: { lat: 83, lng: -120 },
+        center: { lat: 83, lng: 10000 },
+        minZoom: 4,
+        maxZoom: 12,
+        restriction: {
+          latLngBounds: {
+            north: 86,
+            south: 75,
+            east: -35,
+            west: -190
+          }
+        },
         streetViewControl: false,
         mapTypeId: "coordinate",
         mapTypeControlOptions: {
